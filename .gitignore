@@ -1,0 +1,14 @@
+# Ignore .txt files
+*.txt
+
+# Ignore .html files
+*.html
+
+# Ignore .json files
+*.json
+
+# Ignore irrelevant folders
+checkpoints/
+integrated_datasets/
+Helper Functions/
+Helper_Functions/
