@@ -29,8 +29,8 @@ from langchain.chat_models import init_chat_model
 from os import getenv
 from langchain_openai import ChatOpenAI
 
-# Set working directory.
-os.chdir(r"C:\Users\derek\Documents\Personal\Volunteer\1. Repair Kopitiam\1. Chatbot\2. Code")
+# # Set working directory.
+# os.chdir(r"C:\Users\derek\Documents\Personal\Volunteer\1. Repair Kopitiam\1. Chatbot\2. Code")
 
 # ============================================================================
 # Set up OpenRouter API call
