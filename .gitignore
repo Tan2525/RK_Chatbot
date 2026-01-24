@@ -1,3 +1,6 @@
+# Ignore .toml files
+*.toml
+
 # Ignore .txt files
 *.txt
 

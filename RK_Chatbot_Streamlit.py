@@ -25,38 +25,56 @@ from dataclasses import dataclass
 from urllib.parse import quote
 import requests
 import json
+from langchain.chat_models import init_chat_model
+from os import getenv
+from dotenv import load_dotenv
+from langchain_openai import ChatOpenAI
 
-os.chdir(r"C:\Users\derek\Documents\Personal\Volunteer\1. Repair Kopitiam\1. Chatbot")
+# Set working directory.
+os.chdir(r"C:\Users\derek\Documents\Personal\Volunteer\1. Repair Kopitiam\1. Chatbot\2. Code")
 
 # ============================================================================
 # Set up OpenRouter API call
 # ============================================================================
 
-response = requests.post(
-  url="https://openrouter.ai/api/v1/chat/completions",
-  headers={
-    "Authorization": "Bearer <OPENROUTER_API_KEY>",
-    "HTTP-Referer": "<YOUR_SITE_URL>", # Optional. Site URL for rankings on openrouter.ai.
-    "X-Title": "<YOUR_SITE_NAME>", # Optional. Site title for rankings on openrouter.ai.
-  },
-  data=json.dumps({
-    "model": "openai/gpt-5.2", # Optional
-    "messages": [
-      {
-        "role": "user",
-        "content": "What is the meaning of life?"
-      }
-    ]
-  })
-)
+# Load environment variables from .env file.
+load_dotenv()
 
+# # Initialize the model with OpenRouter's base URL
+# model = init_chat_model(
+#     model = "google/gemma-3-27b-it:free",
+#     model_provider = "ollama",
+#     base_url = "https://openrouter.ai/api/v1",
+#     api_key = getenv("OPENROUTER_API_KEY")
+#     # default_headers={
+#     #     "HTTP-Referer": getenv("YOUR_SITE_URL"),  # Optional. Site URL for rankings on openrouter.ai.
+#     #     "X-Title": getenv("YOUR_SITE_NAME"),  # Optional. Site title for rankings on openrouter.ai.
+#     # }
+# )
+
+model = ChatOpenAI(
+    openai_api_key=st.secrets["OPENROUTER_API_KEY"],
+    openai_api_base="https://openrouter.ai/api/v1",
+    model_name="google/gemma-3-27b-it:free",
+    temperature=0.0,
+    top_p=0.9,
+    frequency_penalty=0.0,
+    presence_penalty=0.0,
+    extra_body={
+        "provider": {
+            "order": ["Amazon Bedrock", "Azure"],
+            "sort": "latency"
+        },
+        "models": ["google/gemma-3-27b-it:free"]
+    }
+)
 
 # ============================================================================
 # Prepare images
 # ============================================================================
 
 # Load the dictionary from the file using pickle.
-with open('./1.5. Data/Training Materials/Processed/RK_presentation_image_dict', 'rb') as f:
+with open('./1. Datasets/RK_presentation_image_dict', 'rb') as f:
     RK_presentation_image_dict = pickle.load(f)
 
 # Extract image summaries, base64 images and image locations from the dictionary.
@@ -180,7 +198,7 @@ def prepare_images(docs):
     return {"images": b64_images, "locations": b64_images_locations}
 
 
-def img_prompt_func(data_dict, num_images = 2):
+def img_prompt_func(data_dict, num_images = 1):
     """
     GPT-4V prompt for image analysis.
 
@@ -249,8 +267,8 @@ def multi_modal_rag_chain(retriever):
     Build Multimodal RAG Image Question Answering Chain
     """
     
-    # Instantiate the ChatOllama model with specified parameters.
-    model = ChatOllama(model = "llava", max_tokens = 1024, temperature = 0)
+    # # Instantiate the ChatOllama model with specified parameters.
+    # model = ChatOllama(model = "llava", max_tokens = 1024, temperature = 0)
 
     # Define the retrieval-augmented generation (RAG) pipeline.
     # This chain orchestrates the flow of data through multiple processing steps:
