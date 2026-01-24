@@ -1,2 +1,9 @@
 langchain_ollama
 langchain_openai
+langchain_classic
+pydantic
+langfuse
+langgraph
+langchain_core
+requests 
+langchain
