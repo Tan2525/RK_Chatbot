@@ -27,7 +27,6 @@ import requests
 import json
 from langchain.chat_models import init_chat_model
 from os import getenv
-from dotenv import load_dotenv
 from langchain_openai import ChatOpenAI
 
 # Set working directory.
@@ -36,9 +35,6 @@ os.chdir(r"C:\Users\derek\Documents\Personal\Volunteer\1. Repair Kopitiam\1. Cha
 # ============================================================================
 # Set up OpenRouter API call
 # ============================================================================
-
-# Load environment variables from .env file.
-load_dotenv()
 
 # # Initialize the model with OpenRouter's base URL
 # model = init_chat_model(
