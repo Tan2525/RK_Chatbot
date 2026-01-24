@@ -7,3 +7,4 @@ langgraph
 langchain_core
 requests 
 langchain
+langchain_community
