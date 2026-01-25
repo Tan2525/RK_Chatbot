@@ -9,3 +9,5 @@ requests
 langchain
 langchain_community
 chromadb
+langchain_huggingface
+sentence_transformers

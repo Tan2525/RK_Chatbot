@@ -28,6 +28,8 @@ import json
 from langchain.chat_models import init_chat_model
 from os import getenv
 from langchain_openai import ChatOpenAI
+from langchain_huggingface import HuggingFaceEmbeddings
+from sentence_transformers import SentenceTransformer
 
 # # Set working directory.
 # os.chdir(r"C:\Users\derek\Documents\Personal\Volunteer\1. Repair Kopitiam\1. Chatbot\2. Code")
@@ -138,7 +140,8 @@ def create_multi_vector_retriever(vectorstore, image_summaries, images, image_lo
 
 # Create a Chroma vectorstore with "embeddinggemma" embeddings to index image summaries.
 vectorstore_mvr = Chroma(
-    collection_name = "multi-modal-rag-mv", embedding_function = OllamaEmbeddings(model = "embeddinggemma")
+    # collection_name = "multi-modal-rag-mv", embedding_function = OllamaEmbeddings(model = "embeddinggemma")
+    collection_name = "multi-modal-rag-mv", embedding_function = SentenceTransformer("Qwen/Qwen3-Embedding-8B")
 )
 
 # # Clear the vectorstore collection to reset it before repopulating with new data.
