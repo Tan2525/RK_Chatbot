@@ -98,7 +98,7 @@ def load_image_data(path: str):
     return RK_presentation_image_dict
 
 # Load image data from pickle file.
-RK_presentation_image_dict = load_image_data(path = './1. Documents/RK_presentation_image_dict.pkl')
+RK_presentation_image_dict = load_image_data(path = './1. Datasets/RK_presentation_image_dict.pkl')
 
 # Extract image summaries, base64 images and image locations from the dictionary.
 RK_presentation_image_summaries = [RK_presentation_image_dict[i]['summary'] for i in RK_presentation_image_dict]
