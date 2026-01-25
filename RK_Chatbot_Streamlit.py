@@ -295,7 +295,7 @@ def img_prompt_func(data_dict, num_images = 1):
     # Return the messages wrapped in a HumanMessage object.
     return [HumanMessage(content = messages)]
 
-@st.cache_data # Add the caching decorator.
+@st.cache_resource # Add the caching decorator.
 def multi_modal_rag_chain(_retriever):
     """    
     Build Multimodal RAG Image Question Answering Chain
