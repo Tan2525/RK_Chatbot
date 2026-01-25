@@ -110,7 +110,7 @@ RK_presentation_image_locations = [RK_presentation_image_dict[i]['location'] for
 # ============================================================================
 
 @st.cache_resource # Add the caching decorator.
-def create_multi_vector_retriever(vectorstore, image_summaries, images, image_locations):
+def create_multi_vector_retriever(_vectorstore, image_summaries, images, image_locations):
     """
     Create retriever that indexes summaries, but returns raw images or text or image sources.
 
