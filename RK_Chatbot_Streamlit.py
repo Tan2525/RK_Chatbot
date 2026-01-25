@@ -4,6 +4,7 @@
 # ============================================================================
 
 import os
+from pyexpat import model
 import uuid
 import pickle
 from langchain_ollama import OllamaEmbeddings
@@ -50,30 +51,54 @@ from sentence_transformers import SentenceTransformer
 #     # }
 # )
 
-model = ChatOpenAI(
-    openai_api_key=st.secrets["OPENROUTER_API_KEY"],
-    openai_api_base="https://openrouter.ai/api/v1",
-    model_name="google/gemma-3-27b-it:free",
-    temperature=0.0,
-    top_p=0.9,
-    frequency_penalty=0.0,
-    presence_penalty=0.0,
-    extra_body={
-        "provider": {
-            "order": ["Amazon Bedrock", "Azure"],
-            "sort": "latency"
-        },
-        "models": ["google/gemma-3-27b-it:free"]
-    }
-)
+@st.cache_resource # Add the caching decorator
+def load_model():
+    """
+    Load the ChatOpenAI model with OpenRouter configuration.
+    """
+
+    model = ChatOpenAI(
+        openai_api_key=st.secrets["OPENROUTER_API_KEY"],
+        openai_api_base="https://openrouter.ai/api/v1",
+        model_name="google/gemma-3-27b-it:free",
+        temperature=0.0,
+        top_p=0.9,
+        frequency_penalty=0.0,
+        presence_penalty=0.0,
+        extra_body={
+            "provider": {
+                "order": ["Amazon Bedrock", "Azure"],
+                "sort": "latency"
+            },
+            "models": ["google/gemma-3-27b-it:free"]
+        }
+    )
+    
+    return model
+
+# Load the model.
+model = load_model()
 
 # ============================================================================
 # Prepare images
 # ============================================================================
 
-# Load the dictionary from the file using pickle.
-with open('./1. Datasets/RK_presentation_image_dict', 'rb') as f:
-    RK_presentation_image_dict = pickle.load(f)
+@st.cache_resource  # Add the caching decorator
+def load_image_data(path: str):
+    """
+    Load image data from pickle file.
+
+    :return: Dictionary containing image summaries, base64 images and image locations.
+    """
+    
+    # Load the dictionary from the file using pickle.
+    with open(path, 'rb') as f:
+        RK_presentation_image_dict = pickle.load(f)
+        
+    return RK_presentation_image_dict
+
+# Load image data from pickle file.
+RK_presentation_image_dict = load_image_data(path = '../1. Documents/RK_presentation_image_dict.pkl')
 
 # Extract image summaries, base64 images and image locations from the dictionary.
 RK_presentation_image_summaries = [RK_presentation_image_dict[i]['summary'] for i in RK_presentation_image_dict]
@@ -84,6 +109,7 @@ RK_presentation_image_locations = [RK_presentation_image_dict[i]['location'] for
 # Build Multi-Vector Retriever for Semantic Image Search
 # ============================================================================
 
+@st.cache_resource # Add the caching decorator.
 def create_multi_vector_retriever(vectorstore, image_summaries, images, image_locations):
     """
     Create retriever that indexes summaries, but returns raw images or text or image sources.
@@ -131,29 +157,37 @@ def create_multi_vector_retriever(vectorstore, image_summaries, images, image_lo
         
         # Store all images in the docstore, mapping each doc_id to its corresponding image Document object.
         retriever.docstore.mset(list(zip(doc_ids, content_docs)))
-
+    
     # Add image summaries, images and image locations to the vectorstore and docstore.
     add_documents(retriever, image_summaries, images, image_locations)
 
     # Return the retriever.
     return retriever
 
-# Create a Chroma vectorstore with "embeddinggemma" embeddings to index image summaries.
-vectorstore_mvr = Chroma(
-    # collection_name = "multi-modal-rag-mv", embedding_function = OllamaEmbeddings(model = "embeddinggemma")
-    collection_name = "multi-modal-rag-mv", embedding_function = HuggingFaceEmbeddings(model_name="intfloat/multilingual-e5-small")
-)
+@st.cache_resource  # Add the caching decorator
+def create_multi_vector_retriever():
+    
+    # Create a Chroma vectorstore with "embeddinggemma" embeddings to index image summaries.
+    vectorstore_mvr = Chroma(
+        # collection_name = "multi-modal-rag-mv", embedding_function = OllamaEmbeddings(model = "embeddinggemma")
+        collection_name = "multi-modal-rag-mv", embedding_function = HuggingFaceEmbeddings(model_name = "intfloat/multilingual-e5-small")
+    )
 
-# # Clear the vectorstore collection to reset it before repopulating with new data.
-# vectorstore_mvr.delete_collection()
+    # # Clear the vectorstore collection to reset it before repopulating with new data.
+    # vectorstore_mvr.delete_collection()
 
-# Create multi-vector retriever
-retriever_multi_vector_img = create_multi_vector_retriever(
-    vectorstore_mvr,
-    RK_presentation_image_summaries,
-    RK_presentation_images_base_64_processed,
-    RK_presentation_image_locations
-)
+    # Create multi-vector retriever
+    retriever_multi_vector_img = create_multi_vector_retriever(
+        vectorstore_mvr,
+        RK_presentation_image_summaries,
+        RK_presentation_images_base_64_processed,
+        RK_presentation_image_locations
+    )
+    
+    return retriever_multi_vector_img
+
+# Create multi-vector retriever for images.
+retriever_multi_vector_img = create_multi_vector_retriever()
 
 # ============================================================================
 # Image Processing and Multimodal Prompt Construction
@@ -166,7 +200,8 @@ class Data(BaseModel):
     # Define the fields in the schema.
     response: str = Field(description = "The response to the user's question")
     image_location: list = Field(description = "The filename(s) of the image file. This is stored in the image_loc metadata. You MUST ALWAYS store each filename as a dict with the key 'filename'.")
-    
+
+@st.cache_data # Add the caching decorator.
 def prepare_images(docs):
     """
     Prepare images for prompt
@@ -196,7 +231,7 @@ def prepare_images(docs):
             
     return {"images": b64_images, "locations": b64_images_locations}
 
-
+@st.cache_data # Add the caching decorator.
 def img_prompt_func(data_dict, num_images = 1):
     """
     GPT-4V prompt for image analysis.
@@ -260,7 +295,7 @@ def img_prompt_func(data_dict, num_images = 1):
     # Return the messages wrapped in a HumanMessage object.
     return [HumanMessage(content = messages)]
 
-
+@st.cache_data # Add the caching decorator.
 def multi_modal_rag_chain(retriever):
     """    
     Build Multimodal RAG Image Question Answering Chain
@@ -309,6 +344,7 @@ class BasicChatState(TypedDict):
     # which tells LangGraph to append new messages to the existing list, rather than overwriting it.
     messages: Annotated[list, add_messages]
 
+@st.cache_data # Add the caching decorator.
 def chatbot(state: BasicChatState):
     """
     LangGraph node that processes user queries through the multimodal RAG pipeline.
