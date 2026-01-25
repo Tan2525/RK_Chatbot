@@ -135,7 +135,7 @@ def create_multi_vector_retriever(vectorstore, image_summaries, images, image_lo
     )
 
     # Helper function to add documents to the vectorstore and docstore
-    def add_documents(retriever, doc_summaries, doc_contents, doc_locations):
+    def add_documents(_retriever, doc_summaries, doc_contents, doc_locations):
         
         # Generate unique IDs for each document.
         doc_ids = [str(uuid.uuid4()) for _ in doc_contents]
@@ -165,7 +165,7 @@ def create_multi_vector_retriever(vectorstore, image_summaries, images, image_lo
     return retriever
 
 @st.cache_resource  # Add the caching decorator
-def create_multi_vector_retriever():
+def initialize_multi_vector_retriever():
     
     # Create a Chroma vectorstore with "embeddinggemma" embeddings to index image summaries.
     vectorstore_mvr = Chroma(
@@ -187,7 +187,7 @@ def create_multi_vector_retriever():
     return retriever_multi_vector_img
 
 # Create multi-vector retriever for images.
-retriever_multi_vector_img = create_multi_vector_retriever()
+retriever_multi_vector_img = initialize_multi_vector_retriever()
 
 # ============================================================================
 # Image Processing and Multimodal Prompt Construction
