@@ -296,7 +296,7 @@ def img_prompt_func(data_dict, num_images = 1):
     return [HumanMessage(content = messages)]
 
 @st.cache_data # Add the caching decorator.
-def multi_modal_rag_chain(retriever):
+def multi_modal_rag_chain(_retriever):
     """    
     Build Multimodal RAG Image Question Answering Chain
     """
@@ -310,7 +310,7 @@ def multi_modal_rag_chain(retriever):
         # Step 1: Create a dictionary with two keys for the prompt function:
         {
             # "context": Retrieve relevant documents using the retriever, then prepare them (convert to images dict)
-            "context": retriever | RunnableLambda(prepare_images),
+            "context": _retriever | RunnableLambda(prepare_images),
             # "question": Pass the user's question through unchanged
             "question": RunnablePassthrough(),
         }
