@@ -141,7 +141,7 @@ def create_multi_vector_retriever(vectorstore, image_summaries, images, image_lo
 # Create a Chroma vectorstore with "embeddinggemma" embeddings to index image summaries.
 vectorstore_mvr = Chroma(
     # collection_name = "multi-modal-rag-mv", embedding_function = OllamaEmbeddings(model = "embeddinggemma")
-    collection_name = "multi-modal-rag-mv", embedding_function = SentenceTransformer("Qwen/Qwen3-Embedding-8B")
+    collection_name = "multi-modal-rag-mv", embedding_function = SentenceTransformer("Qwen/Qwen3-Embedding-0.6B")
 )
 
 # # Clear the vectorstore collection to reset it before repopulating with new data.
