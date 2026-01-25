@@ -128,7 +128,7 @@ def create_multi_vector_retriever(_vectorstore, image_summaries, images, image_l
 
     # Create the multi-vector retriever
     retriever = MultiVectorRetriever(
-        vectorstore = vectorstore,
+        vectorstore = _vectorstore,
         docstore = store,
         id_key = id_key,
         location = location
@@ -147,7 +147,7 @@ def create_multi_vector_retriever(_vectorstore, image_summaries, images, image_l
         ]
         
         # Add documents to the vectorstore.
-        retriever.vectorstore.add_documents(summary_docs)
+        _retriever.vectorstore.add_documents(summary_docs)
         
         # Wrap content (images) in Document objects for docstore, with ids and locations in metadata.
         content_docs = [
@@ -156,7 +156,7 @@ def create_multi_vector_retriever(_vectorstore, image_summaries, images, image_l
         ]
         
         # Store all images in the docstore, mapping each doc_id to its corresponding image Document object.
-        retriever.docstore.mset(list(zip(doc_ids, content_docs)))
+        _retriever.docstore.mset(list(zip(doc_ids, content_docs)))
     
     # Add image summaries, images and image locations to the vectorstore and docstore.
     add_documents(retriever, image_summaries, images, image_locations)
