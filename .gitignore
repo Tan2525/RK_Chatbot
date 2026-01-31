@@ -1,3 +1,7 @@
+# Ignore development file
+*.ipynb
+.streamlit/
+
 # Ignore .toml files
 *.toml
 
